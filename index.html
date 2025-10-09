@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html onselectstart="return false">
+<head lang="en">
+    <meta charset="UTF-8">
+    <!-- 新增viewport元标签：优化手机端显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D旋转图片集（20张·触摸版）</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #000;
+            overflow: hidden;
+        }
+        /* 3D场景容器：提供景深，值越小3D感越强 */
+        #perspective {
+            -webkit-perspective: 800px;
+            -moz-perspective: 800px;
+            perspective: 800px;
+        }
+        /* 3D旋转容器：子元素3D继承 + 初始角度 */
+        #wrap {
+            width: 120px;    /* 单张图片宽度（2:3比例，对应高度180px） */
+            height: 180px;   /* 单张图片高度 */
+            margin: 0 auto;
+            position: relative;
+            /* 3D核心属性：必加 */
+            -webkit-transform-style: preserve-3d;
+            -moz-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            /* 初始旋转角度：X轴仰角-10°，Y轴0° */
+            -webkit-transform: rotateX(-10deg) rotateY(0deg);
+            -moz-transform: rotateX(-10deg) rotateY(0deg);
+            transform: rotateX(-10deg) rotateY(0deg);
+        }
+        /* 图片样式：3D排列 + 视觉增强 */
+        #wrap img {
+            width: 100%;
+            height: 100%;
+            position: absolute; /* 绝对定位后通过3D分散 */
+            border-radius: 5px; /* 圆角优化 */
+            /* 阴影增强立体轮廓 */
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
+            /* 图片底部倒影（webkit核心浏览器支持） */
+            -webkit-box-reflect: below 10px -webkit-linear-gradient(
+                top, 
+                rgba(0,0,0,0) 50%, 
+                rgba(0,0,0,0.6) 100%
+            );
+            /* 过渡动画：确保旋转/排列流畅 */
+            -webkit-transition: transform 1s ease;
+            -moz-transition: transform 1s ease;
+            transition: transform 1s ease;
+        }
+        /* 底部光晕：模拟地面反光，增强场景感 */
+        #wrap p {
+            width: 1200px;
+            height: 1200px;
+            /* 径向渐变：粉色半透明→透明 */
+            background: -webkit-radial-gradient(
+                center center, 
+                600px 600px, 
+                rgba(244,23,234,0.2), 
+                rgba(0,0,0,0)
+            );
+            background: -moz-radial-gradient(
+                center center, 
+                600px 600px, 
+                rgba(244,23,234,0.2), 
+                rgba(0,0,0,0)
+            );
+            background: radial-gradient(
+                center center, 
+                600px 600px, 
+                rgba(244,23,234,0.2), 
+                rgba(0,0,0,0)
+            );
+            border-radius: 50%; /* 圆形光晕 */
+            position: absolute;
+            left: 50%;
+            top: 102%; /* 位于图片底部下方 */
+            margin-left: -600px; /* 水平居中 */
+            margin-top: -600px;
+            /* 平躺于地面（绕X轴转90°） */
+            -webkit-transform: rotateX(90deg);
+            -moz-transform: rotateX(90deg);
+            transform: rotateX(90deg);
+            pointer-events: none; /* 不遮挡鼠标/触摸交互 */
+        }
+    </style>
+</head>
+<body>
+    <div id="perspective">
+        <div id='wrap'>
+            <!-- 注意：第一张图路径是"images/photo1.jpg"，其他是"imageX.jpg"，需统一路径！ -->
+            <img src=images/photo1.jpg" alt="图片1">
+            <img src="images/photo2.jpg" alt="图片2">
+            <img src="images/photo3.jpg" alt="图片3">
+            <img src="images/photo4.jpg" alt="图片4">
+            <img src="images/photo5.jpg" alt="图片5">
+            <img src="images/photo6.jpg" alt="图片6">
+            <img src="images/photo7.jpg" alt="图片7">
+            <img src="images/photo8.jpg" alt="图片8">
+            <img src="images/photo9.jpg" alt="图片9">
+            <img src="images/photo10.jpg" alt="图片10">
+            <img src="images/photo11.jpg" alt="图片11">
+            <img src="images/photo12.jpg" alt="图片12">
+            <img src="images/photo13.jpg" alt="图片13">
+            <img src="images/photo14.jpg" alt="图片14">
+            <img src="images/photo15.jpg" alt="图片15">
+            <img src="images/photo16.jpg" alt="图片16">
+            <img src="images/photo17.jpg" alt="图片17">
+            <img src="images/photo18.jpg" alt="图片18">
+            <img src="images/photo19.jpg" alt="图片19">
+            <img src="images/photo20.jpg" alt="图片20">
+            
+            <p></p> <!-- 底部光晕 -->
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        window.onload = function () {
+            // 1. 获取DOM元素
+            var oWrap = document.getElementById('wrap');
+            var oImg = oWrap.getElementsByTagName('img');
+            var oImgLength = oImg.length; // 图片数量：20张
+            var Deg = 360 / oImgLength;   // 每张图片角度间隔：18°/张
+            var roY = 0, roX = -10;       // 初始旋转角度
+            var timer;                    // 惯性旋转定时器
+            var lastX, lastY, minusX = 0, minusY = 0; // 坐标与偏移量（鼠标/触摸共用）
+
+            // 2. 初始化：20张图片绕Y轴3D环形排列
+            for (var i = 0; i < oImgLength; i++) {
+                oImg[i].style.transform = `rotateY(${i * Deg}deg) translateZ(380px)`;
+                oImg[i].style.transitionDelay = `${(oImgLength - 1 - i) * 0.1}s`;
+            }
+
+            // 3. 窗口适配：图片环垂直居中（手机/电脑都适配）
+            function setVerticalCenter() {
+                var windowHeight = document.documentElement.clientHeight;
+                oWrap.style.marginTop = `${windowHeight / 2 - 180}px`; // 180=图片高度
+            }
+            setVerticalCenter();
+            window.onresize = setVerticalCenter;
+
+            // ==================== 1. 鼠标控制（保留，电脑端用） ====================
+            document.onmousedown = function (ev) {
+                ev = ev || window.event;
+                lastX = ev.clientX;
+                lastY = ev.clientY;
+                clearInterval(timer); // 停止惯性
+
+                // 鼠标移动
+                this.onmousemove = function (ev) {
+                    ev = ev || window.event;
+                    clearInterval(timer);
+                    var nowX = ev.clientX;
+                    var nowY = ev.clientY;
+                    minusX = nowX - lastX;
+                    minusY = nowY - lastY;
+
+                    // 更新旋转角度
+                    roY += minusX * 0.2;
+                    roX -= minusY * 0.1;
+                    oWrap.style.transform = `rotateX(${roX}deg) rotateY(${roY}deg)`;
+
+                    lastX = nowX;
+                    lastY = nowY;
+                }
+
+                // 鼠标抬起
+                this.onmouseup = function () {
+                    this.onmousemove = null;
+                    startInertia(); // 共用惯性旋转函数
+                }
+
+                return false; // 阻止文字选中
+            }
+
+            // ==================== 2. 触摸控制（新增，手机端用） ====================
+            // 触摸开始（对应鼠标mousedown）
+            document.addEventListener('touchstart', function(ev) {
+                ev = ev || window.event;
+                var touch = ev.touches[0]; // 取第一个触摸点（避免多点触摸干扰）
+                lastX = touch.clientX;
+                lastY = touch.clientY;
+                clearInterval(timer); // 停止惯性
+                return false;
+            }, false);
+
+            // 触摸移动（对应鼠标mousemove）
+            document.addEventListener('touchmove', function(ev) {
+                ev = ev || window.event;
+                ev.preventDefault(); // 关键：阻止手机端触摸时页面滚动
+                var touch = ev.touches[0];
+                var nowX = touch.clientX;
+                var nowY = touch.clientY;
+                minusX = nowX - lastX;
+                minusY = nowY - lastY;
+
+                // 更新旋转角度（灵敏度和鼠标一致）
+                roY += minusX * 0.2;
+                roX -= minusY * 0.1;
+                oWrap.style.transform = `rotateX(${roX}deg) rotateY(${roY}deg)`;
+
+                lastX = nowX;
+                lastY = nowY;
+            }, false);
+
+            // 触摸结束（对应鼠标mouseup）
+            document.addEventListener('touchend', function() {
+                startInertia(); // 共用惯性旋转函数
+            }, false);
+
+            // ==================== 3. 共用惯性旋转函数（减少重复代码） ====================
+            function startInertia() {
+                timer = setInterval(function () {
+                    // 偏移量衰减（每次乘以0.95，逐渐减速）
+                    minusX *= 0.95;
+                    minusY *= 0.95;
+                    roY += minusX * 0.2;
+                    roX -= minusY * 0.1;
+                    oWrap.style.transform = `rotateX(${roX}deg) rotateY(${roY}deg)`;
+
+                    // 偏移量过小则停止惯性
+                    if (Math.abs(minusX) < 0.1 && Math.abs(minusY) < 0.1) {
+                        clearInterval(timer);
+                    }
+                }, 13); // 13ms间隔（接近60fps，动画流畅）
+            }
+        }
+    </script>
+</body>
+</html>
