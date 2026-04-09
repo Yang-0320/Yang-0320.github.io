@@ -3,20 +3,20 @@
     padding: 0;
     box-sizing: border-box;
 }
-
-body {
+html, body {
+    width: 100%;
+    height: 100%;
     background: #000;
     overflow: hidden;
     user-select: none;
 }
-
 .tips {
     position: fixed;
-    top: 20px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
     color: #ccc;
-    font-size: 14px;
+    font-size: 12px;
     z-index: 10;
 }
 
@@ -26,8 +26,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* 🔴 关键修复：加大透视距离，让圆环完整显示 */
-    perspective: 2000px;
+    perspective: 1800px;
+    position: relative;
 }
 
 #wrap {
@@ -35,74 +35,49 @@ body {
     width: 0;
     height: 0;
     transform-style: preserve-3d;
-    /* 🔴 关键修复：初始X轴旋转角度，让圆环居中显示 */
     transform: rotateX(-15deg);
 }
 
+/* 原图 + 倒影一体样式（核心修复：用CSS原生box-reflect，100%同步） */
 #wrap img {
     position: absolute;
-    width: 200px;
-    height: 280px;
-    left: -100px;
-    top: -140px;
+    width: 150px;
+    height: 200px;
+    left: -75px;
+    top: -100px;
     border-radius: 8px;
-    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
     backface-visibility: hidden;
     object-fit: cover;
     cursor: pointer;
+    /* 👇 关键：CSS原生倒影，自动在图片下方生成，完全同步原图的3D变换 */
+    -webkit-box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
+    box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
 }
 
-/* 🟢 倒影样式（核心补全） */
-#reflection-wrap {
-    position: absolute;
-    width: 0;
-    height: 0;
-    transform-style: preserve-3d;
-    /* 倒影位置：在原图下方，垂直翻转 */
-    transform: rotateX(180deg) translateY(320px);
-    opacity: 0.3;
-    /* 渐变遮罩，让倒影从下到上消失 */
-    mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,1) 100%);
-    -webkit-mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,1) 100%);
-    pointer-events: none; /* 不拦截点击事件 */
-}
-
-#reflection-wrap img {
-    position: absolute;
-    width: 200px;
-    height: 280px;
-    left: -100px;
-    top: -140px;
-    border-radius: 8px;
-    backface-visibility: hidden;
-    object-fit: cover;
-    filter: blur(2px); /* 倒影模糊，更真实 */
-}
-
+/* 弹窗：永远不溢出屏幕 */
 #modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.9);
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.95);
     z-index: 999;
     align-items: center;
     justify-content: center;
 }
-
 #modal-img {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 92%;
+    max-height: 92%;
+    object-fit: contain;
     border-radius: 10px;
 }
-
 #close-modal {
     position: absolute;
     top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 40px;
+    right: 25px;
+    color: #fff;
+    font-size: 36px;
     cursor: pointer;
+    z-index: 1000;
 }
