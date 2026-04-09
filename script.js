@@ -4,9 +4,8 @@ window.onload = function () {
     const modalImg = document.getElementById('modal-img');
     const closeBtn = document.getElementById('close-modal');
 
-    // 配置（手机/电脑双安全）
     const imgCount = 10;
-    let radius = 420;        // 初始圆环大小
+    let radius = 420;
     let rotY = 0;
     let rotX = -15;
     let isDrag = false;
@@ -25,21 +24,19 @@ window.onload = function () {
         imgs.push(img);
     }
 
-    // ====================== 360°完整球体布局 ======================
+    // 完整圆环布局
     function arrange() {
         imgs.forEach((img, i) => {
-
             const angle = (360 / imgCount) * i;
             img.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
         });
     }
 
-    // 更新整体旋转
     function updateRotate() {
         wrap.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
     }
 
-    // 拖拽逻辑
+    // 拖拽
     function startDrag(e) {
         isDrag = true;
         const x = e.clientX || e.touches[0].clientX;
@@ -58,11 +55,9 @@ window.onload = function () {
         moveX = x - lastX;
         moveY = y - lastY;
 
-        rotY += moveX * 0.25;
-        rotX -= moveY * 0.15;
-        // 限制X轴角度，防止翻转
-        rotX = Math.max(-35, Math.min(35, rotX));
-
+        rotY += moveX * 0.15;
+        rotX -= moveY * 0.1;
+        rotX = Math.max(-30, Math.min(30, rotX));
         updateRotate();
         lastX = x; lastY = y;
     }
@@ -70,35 +65,34 @@ window.onload = function () {
     function endDrag() {
         isDrag = false;
         inertiaTimer = setInterval(() => {
-            moveX *= 0.93;
-            moveY *= 0.93;
-            rotY += moveX * 0.25;
-            rotX -= moveY * 0.15;
-            rotX = Math.max(-35, Math.min(35, rotX));
+            moveX *= 0.9;
+            moveY *= 0.9;
+            rotY += moveX * 0.15;
+            rotX -= moveY * 0.1;
+            rotX = Math.max(-30, Math.min(30, rotX));
             updateRotate();
-            if (Math.abs(moveX) < 0.1 && Math.abs(moveY) < 0.1) {
+            if (Math.abs(moveX) < 0.5 && Math.abs(moveY) < 0.5) {
                 clearInterval(inertiaTimer);
                 startAutoRotate();
             }
         }, 16);
     }
 
-    // 自动旋转
+    // 自动旋转（变慢）
     function startAutoRotate() {
         autoRotateTimer = setInterval(() => {
             if (!isDrag) {
-                rotY += 0.18;
+                rotY += 0.08;
                 updateRotate();
             }
         }, 30);
     }
 
-    // ====================== 不溢出屏幕 ======================
+    // 缩放
     document.addEventListener('wheel', e => {
         e.preventDefault();
-        radius += e.deltaY < 0 ? -30 : 30;
-        // 安全范围：最小240，最大550，手机电脑都不会超屏
-        radius = Math.max(240, Math.min(550, radius));
+        radius += e.deltaY < 0 ? -20 : 20;
+        radius = Math.max(220, Math.min(550, radius));
         arrange();
     }, { passive: false });
 
@@ -112,13 +106,9 @@ window.onload = function () {
         }
     });
 
-    // 关闭弹窗
     closeBtn.onclick = () => { modal.style.display = 'none'; startAutoRotate(); }
-    modal.onclick = e => {
-        if (e.target === modal) { modal.style.display = 'none'; startAutoRotate(); }
-    }
+    modal.onclick = e => { if (e.target === modal) { modal.style.display = 'none'; startAutoRotate(); } }
 
-    // 事件绑定
     document.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', moveDrag);
     document.addEventListener('mouseup', endDrag);
@@ -126,7 +116,6 @@ window.onload = function () {
     document.addEventListener('touchmove', moveDrag, { passive: false });
     document.addEventListener('touchend', endDrag);
 
-    // 启动
     arrange();
     updateRotate();
     startAutoRotate();

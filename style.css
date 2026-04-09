@@ -38,7 +38,6 @@ html, body {
     transform: rotateX(-15deg);
 }
 
-/* 原图 + 倒影一体样式（核心修复：用CSS原生box-reflect，100%同步） */
 #wrap img {
     position: absolute;
     width: 150px;
@@ -47,15 +46,14 @@ html, body {
     top: -100px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    backface-visibility: hidden;
+    /* 👇👇 我已经帮你改成 visible 了！*/
+    backface-visibility: visible;
     object-fit: cover;
     cursor: pointer;
-    /* 👇 关键：CSS原生倒影，自动在图片下方生成，完全同步原图的3D变换 */
     -webkit-box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
     box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
 }
 
-/* 弹窗：永远不溢出屏幕 */
 #modal {
     display: none;
     position: fixed;
@@ -74,10 +72,10 @@ html, body {
 }
 #close-modal {
     position: absolute;
-    top: 20px;
-    right: 25px;
+    top: 15px;
+    right: 20px;
     color: #fff;
-    font-size: 36px;
+    font-size: 32px;
     cursor: pointer;
     z-index: 1000;
 }
