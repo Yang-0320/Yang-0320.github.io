@@ -5,7 +5,17 @@ window.onload = function () {
     const closeBtn = document.getElementById('close-modal');
 
     const imgCount = 10;
-    let radius = 420;
+
+    // 自适应半径：根据屏幕宽度自动调整
+    function getRadius() {
+        let w = window.innerWidth;
+        if (w < 500) return 260;
+        if (w < 800) return 340;
+        if (w < 1200) return 400;
+        return 450;
+    }
+    let radius = getRadius();
+
     let rotY = 0;
     let rotX = -15;
     let isDrag = false;
@@ -16,7 +26,6 @@ window.onload = function () {
 
     const imgs = [];
 
-    // 生成图片
     for (let i = 1; i <= imgCount; i++) {
         const img = document.createElement('img');
         img.src = `img/photo${i}.jpg`;
@@ -24,7 +33,6 @@ window.onload = function () {
         imgs.push(img);
     }
 
-    // 完整圆环布局
     function arrange() {
         imgs.forEach((img, i) => {
             const angle = (360 / imgCount) * i;
@@ -36,7 +44,6 @@ window.onload = function () {
         wrap.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
     }
 
-    // 拖拽
     function startDrag(e) {
         isDrag = true;
         const x = e.clientX || e.touches[0].clientX;
@@ -78,25 +85,29 @@ window.onload = function () {
         }, 16);
     }
 
-    // 自动旋转（变慢）
     function startAutoRotate() {
+        clearInterval(autoRotateTimer);
         autoRotateTimer = setInterval(() => {
             if (!isDrag) {
-                rotY += 0.08;
+                rotY += 0.15;
                 updateRotate();
             }
         }, 30);
     }
 
-    // 缩放
-    document.addEventListener('wheel', e => {
+    document.addEventListener('wheel', function(e) {
         e.preventDefault();
+        clearInterval(autoRotateTimer);
+
         radius += e.deltaY < 0 ? -20 : 20;
-        radius = Math.max(220, Math.min(550, radius));
+        let minR = window.innerWidth < 500 ? 180 : 220;
+        let maxR = window.innerWidth < 500 ? 380 : 600;
+        radius = Math.max(minR, Math.min(maxR, radius));
+
         arrange();
+        setTimeout(() => { if (!isDrag) startAutoRotate(); }, 500);
     }, { passive: false });
 
-    // 点击放大
     wrap.addEventListener('click', e => {
         if (e.target.tagName === 'IMG') {
             modalImg.src = e.target.src;
@@ -115,6 +126,12 @@ window.onload = function () {
     document.addEventListener('touchstart', startDrag, { passive: false });
     document.addEventListener('touchmove', moveDrag, { passive: false });
     document.addEventListener('touchend', endDrag);
+
+    // 窗口大小改变时自动重排
+    window.addEventListener('resize', () => {
+        radius = getRadius();
+        arrange();
+    });
 
     arrange();
     updateRotate();

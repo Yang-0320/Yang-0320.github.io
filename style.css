@@ -21,12 +21,12 @@ html, body {
 }
 
 #perspective {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1800px;
+    perspective: 1200px;
     position: relative;
 }
 
@@ -40,18 +40,16 @@ html, body {
 
 #wrap img {
     position: absolute;
-    width: 150px;
-    height: 200px;
-    left: -75px;
-    top: -100px;
+    width: 140px;
+    height: 180px;
+    margin-left: -70px;
+    margin-top: -90px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    /* 👇👇 我已经帮你改成 visible 了！*/
     backface-visibility: visible;
     object-fit: cover;
     cursor: pointer;
     -webkit-box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
-    box-reflect: below 10px linear-gradient(transparent 30%, rgba(0,0,0,0.5));
 }
 
 #modal {
